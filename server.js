@@ -1,13 +1,12 @@
 const express = require("express");
 const { exec } = require("child_process");
 const fs = require("fs");
-const receiptio = require('receiptio');
 
 const app = express();
-app.use(express.json());
+app.use(express.text());
 
 app.post("/print", (req, res) => {
-    const { content } = req.body;
+    const content = req.body;
 
     if (!content) {
         return res.status(400).json({ error: "Missing content" });
@@ -15,19 +14,23 @@ app.post("/print", (req, res) => {
 
     const path = "/app/receipts/print.md";
     fs.writeFileSync(path, content);
+    console.log('Printing...');
 
-   /* exec(`receiptio ${path} -c 30 -p generic > /dev/usb/lp0`, (err, stdout, stderr) => {
-        if (err) {
-            console.error("Print error:", stderr);
-            return res.status(500).json({ error: "Print failed" });
-        }
+    console.log(content);
 
-        res.json({ status: "printed", output: stdout });
-    });*/
+    try {
+        exec(`receiptio ${path} -c 30 -p generic > /dev/usb/lp0`, (err, stdout, stderr) => {
+            if (err) {
+                console.error("Print error:", stderr);
+                return res.status(500).json({ error: "Print failed" });
+            }
 
-    receiptio.print(content, '-d /dev/usb/lp0 -c 30 -p generic').then(result => {
-        console.log(result);
-    });
+            console.log('Print done');
+            res.json({ status: "printed", output: stdout });
+        });
+    } catch (err) {
+        console.error("Print error:", err);
+    }
 });
 
 app.listen(3300, () => {
