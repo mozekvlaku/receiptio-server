@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  receipt-server:
+    build: .
+    container_name: receipt-server
+    restart: unless-stopped
+
+    ports:
+      - "3300:3300"
+
+    devices:
+      - "/dev/usb/lp0:/dev/usb/lp0"
+
+    volumes:
+      - ./receipts:/app/receipts
