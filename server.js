@@ -1,6 +1,6 @@
-import express from "express";
-import { exec } from "child_process";
-import fs from "fs";
+const express = require("express");
+const { exec } = require("child_process");
+const fs = require("fs");
 
 const app = express();
 app.use(express.json());
@@ -8,18 +8,23 @@ app.use(express.json());
 app.post("/print", (req, res) => {
     const { content } = req.body;
 
-    if (!content) return res.status(400).json({ error: "Missing content" });
+    if (!content) {
+        return res.status(400).json({ error: "Missing content" });
+    }
 
     const path = "/app/receipts/print.md";
     fs.writeFileSync(path, content);
 
     exec(`receiptio -d /dev/usb/lp0 ${path}`, (err, stdout, stderr) => {
         if (err) {
-            console.error(stderr);
+            console.error("Print error:", stderr);
             return res.status(500).json({ error: "Print failed" });
         }
+
         res.json({ status: "printed", output: stdout });
     });
 });
 
-app.listen(3300, () => console.log("Receipt server running on 3300"));
+app.listen(3300, () => {
+    console.log("Receipt server running on 3300");
+});
