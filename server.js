@@ -15,7 +15,7 @@ app.post("/print", (req, res) => {
     const path = "/app/receipts/print.md";
     fs.writeFileSync(path, content);
 
-    exec(`receiptio -d /dev/usb/lp0 ${path}`, (err, stdout, stderr) => {
+    exec(`receiptio ${path} -c 30 -p generic > /dev/usb/lp0`, (err, stdout, stderr) => {
         if (err) {
             console.error("Print error:", stderr);
             return res.status(500).json({ error: "Print failed" });
